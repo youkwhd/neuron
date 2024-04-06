@@ -30,8 +30,8 @@ module Neuron
 
     function forward(nn :: Network, activation_fn :: Function)
         for i in 2:length(nn.layers)
-            A = reshape(nn.layers[i - 1].neurons, (1, :)) * nn.layers[i - 1].weights
-            nn.layers[i].neurons = map(activation_fn, vec(A))
+            product = reshape(nn.layers[i - 1].neurons, (1, :)) * nn.layers[i - 1].weights
+            nn.layers[i].neurons = map(activation_fn, vec(product))
         end
     end
 end
