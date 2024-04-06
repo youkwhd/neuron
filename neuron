@@ -10,7 +10,7 @@ neural_net =
         Neuron.Layer(1),
     ])
 
-Neuron.forward(neural_net)
+Neuron.forward(neural_net, Math.sigmoid)
 
 for layer in neural_net.layers
     println(layer.neurons)

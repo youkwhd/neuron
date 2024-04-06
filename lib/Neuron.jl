@@ -1,6 +1,4 @@
 module Neuron
-    include("Math.jl")
-
     using Test
 
     mutable struct Layer
@@ -30,10 +28,10 @@ module Neuron
         Network(layers) = new(layers)
     end
 
-    function forward(nn :: Network)
+    function forward(nn :: Network, activation_fn :: Function)
         for i in 2:length(nn.layers)
             A = reshape(nn.layers[i - 1].neurons, (1, :)) * nn.layers[i - 1].weights
-            nn.layers[i].neurons = map(Math.σ, vec(A))
+            nn.layers[i].neurons = map(activation_fn, vec(A))
         end
     end
 end
