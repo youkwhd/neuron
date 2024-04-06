@@ -5,13 +5,19 @@ include("lib/Math.jl")
 
 neural_net =
     Neuron.Network([
-        Neuron.Layer([1, -1], [2 -1; -1 1]),
-        Neuron.Layer(2, reshape([-1; 1], (2, :))),
+        Neuron.Layer([1, -1]),
+        Neuron.Layer(2),
+        Neuron.Layer(3),
+        Neuron.Layer(3),
+        Neuron.Layer(2),
         Neuron.Layer(1),
     ])
 
+Neuron.randomize_weights(neural_net)
 Neuron.forward(neural_net, Math.sigmoid)
 
 for layer in neural_net.layers
     println(layer.neurons)
+    println(layer.weights)
+    println()
 end

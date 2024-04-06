@@ -34,4 +34,14 @@ module Neuron
             nn.layers[i].neurons = map(activation_fn, vec(product))
         end
     end
+
+    # Randomizes weights between -1, 1
+    function randomize_weights(nn :: Network)
+        for i in 1:(length(nn.layers) - 1)
+            nn.layers[i].weights = 
+                rand(Float64,
+                     (length(nn.layers[i].neurons),
+                      length(nn.layers[i + 1].neurons))) * 2 .- 1
+        end
+    end
 end
