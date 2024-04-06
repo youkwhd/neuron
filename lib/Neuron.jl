@@ -4,7 +4,7 @@ module Neuron
         weights :: Matrix{Int8}
 
         Layer(nrows :: Int, ncols :: Int) = new(Matrix{Int8}(undef, nrows, ncols),
-                                                Matrix{Int8}(undef, ncols, nrows))
+                                                Matrix{Int8}(undef, ncols, 1))
 
         Layer(neurons, weights) = new(neurons, weights)
         Layer(neurons) = begin
