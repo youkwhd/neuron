@@ -1,15 +1,17 @@
 module Neuron
+    using Test
+
     struct Layer
-        neurons :: Matrix{Int8}
+        neurons :: Vector{Int8}
         weights :: Matrix{Int8}
 
-        Layer(nrows :: Int, ncols :: Int) = new(Matrix{Int8}(undef, nrows, ncols),
-                                                Matrix{Int8}(undef, ncols, 1))
+        Layer(len :: Int) = new(Vector{Int8}(undef, len), Matrix{Int8}(undef, len, 1))
+        Layer(neurons) = new(neurons, Matrix{Int8}(undef, length(neurons), 1))
+        Layer(neurons, weights) = begin 
+            nrows, _ = size(weights)
+            @test nrows == length(neurons)
 
-        Layer(neurons, weights) = new(neurons, weights)
-        Layer(neurons) = begin
-            nrows, ncols = size(neurons)
-            new(neurons, Matrix{Int8}(undef, ncols, nrows))
+            new(neurons, weights)
         end
     end
 
