@@ -28,7 +28,7 @@ module Neuron
         Network(layers) = new(layers)
     end
 
-    function forward(nn :: Network, activation_fn :: Function)
+    function forward(nn :: Network, activation_fn :: Function = x -> x)
         for i in 2:length(nn.layers)
             product = reshape(nn.layers[i - 1].neurons, (1, :)) * nn.layers[i - 1].weights
             nn.layers[i].neurons = map(activation_fn, vec(product))
