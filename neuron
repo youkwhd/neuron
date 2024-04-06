@@ -1,6 +1,17 @@
 #!/usr/bin/julia
 
+include("lib/Neuron.jl")
 include("lib/Math.jl")
 
-x = 3
-println("σ($x) = $(Math.sigmoid(x))")
+neural_net =
+    Neuron.Network([
+        Neuron.Layer([1, -1], [2 -1; -1 1]),
+        Neuron.Layer(2, reshape([-1; 1], (2, :))),
+        Neuron.Layer(1),
+    ])
+
+Neuron.forward(neural_net)
+
+for layer in neural_net.layers
+    println(layer.neurons)
+end
