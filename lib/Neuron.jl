@@ -6,6 +6,13 @@ module Neuron
         weights :: Matrix{Int8}
 
         Layer(len :: Int) = new(Vector{Int8}(undef, len), Matrix{Int8}(undef, len, 1))
+        Layer(len :: Int, weights) = begin
+            nrows, _ = size(weights)
+            @test nrows == len
+
+            new(Vector{Int8}(undef, len), weights)
+        end
+
         Layer(neurons) = new(neurons, Matrix{Int8}(undef, length(neurons), 1))
         Layer(neurons, weights) = begin 
             nrows, _ = size(weights)
