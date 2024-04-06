@@ -1,7 +1,7 @@
 module Neuron
     using Test
 
-    struct Layer
+    mutable struct Layer
         neurons :: Vector{Int8}
         weights :: Matrix{Int8}
 
