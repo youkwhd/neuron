@@ -8,6 +8,10 @@ ReLU(x) = max(0, x)
 # see: https://stats.stackexchange.com/a/333400
 ReLU_derivative(x) = Int(x > 0)
 
+# Leaky ReLU
+LReLU(x) = max(0.01, x)
+LReLU_derivative(x) = x > 0 ? 1 : 0.01
+
 sigmoid(x) = 1 / (1 + exp(-x))
 σ = sigmoid
 
