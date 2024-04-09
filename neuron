@@ -19,10 +19,5 @@ neural_net =
 Neuron.randomize_weights(neural_net)
 
 Neuron.forward_prop(neural_net, Math.sigmoid)
-Neuron.calculate_loss(neural_net)
-
-for layer in neural_net.layers
-    println(layer.neurons)
-    println(layer.weights)
-    println()
-end
+loss = Neuron.loss(neural_net, [1, 0, 0, 0])
+println("Loss: $loss")

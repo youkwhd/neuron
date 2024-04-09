@@ -29,12 +29,14 @@ module Neuron
         Network(layers) = new(layers)
     end
 
-    DESIRED_OUTPUT = 1
+    function loss(nn :: Network, expected_output :: Vector{Int})
+        @test length(expected_output) == length(last(nn.layers).neurons)
 
-    function calculate_loss(nn :: Network)
-        losses = map(neuron -> -(log(neuron) * DESIRED_OUTPUT), last(nn.layers).neurons)
+        losses = map((neuron, expected) -> -(log(neuron) * expected),
+                    last(nn.layers).neurons, expected_output)
         loss_avg = Statistics.mean(losses)
-        println("Loss: $loss_avg")
+
+        return loss_avg
     end
 
     function forward_prop(nn :: Network, activation_fn :: Function = x -> x)
