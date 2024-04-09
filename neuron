@@ -3,18 +3,23 @@
 include("lib/Neuron.jl")
 include("lib/Math.jl")
 
+input_neurons_len = 8
+input_neurons = rand(Float64, input_neurons_len) * 2 .- 1
+
 neural_net =
     Neuron.Network([
-        Neuron.Layer([1, -1]),
-        Neuron.Layer(2),
-        Neuron.Layer(3),
-        Neuron.Layer(3),
-        Neuron.Layer(2),
-        Neuron.Layer(1),
+        Neuron.Layer(input_neurons),
+        Neuron.Layer(input_neurons_len * 2),
+        Neuron.Layer(input_neurons_len * 2),
+        Neuron.Layer(input_neurons_len * 2),
+        Neuron.Layer(input_neurons_len * 2),
+        Neuron.Layer(input_neurons_len ÷ 2),
     ])
 
 Neuron.randomize_weights(neural_net)
-Neuron.forward(neural_net, Math.sigmoid)
+
+Neuron.forward_prop(neural_net, Math.sigmoid)
+Neuron.calculate_loss(neural_net)
 
 for layer in neural_net.layers
     println(layer.neurons)

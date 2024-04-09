@@ -1,4 +1,5 @@
 module Neuron
+    import Statistics
     using Test
 
     mutable struct Layer
@@ -28,7 +29,15 @@ module Neuron
         Network(layers) = new(layers)
     end
 
-    function forward(nn :: Network, activation_fn :: Function = x -> x)
+    DESIRED_OUTPUT = 1
+
+    function calculate_loss(nn :: Network)
+        losses = map(neuron -> -(log(neuron) * DESIRED_OUTPUT), last(nn.layers).neurons)
+        loss_avg = Statistics.mean(losses)
+        println("Loss: $loss_avg")
+    end
+
+    function forward_prop(nn :: Network, activation_fn :: Function = x -> x)
         for i in 2:length(nn.layers)
             product = reshape(nn.layers[i - 1].neurons, (1, :)) * nn.layers[i - 1].weights
             nn.layers[i].neurons = map(activation_fn, vec(product))
