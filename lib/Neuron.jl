@@ -26,7 +26,20 @@ module Neuron
     struct Network
         layers :: Array{Layer}
 
-        Network(layers) = new(layers)
+        Network(layers) = begin 
+            @test length(layers) >= 2
+            new(layers)
+        end
+    end
+
+    function train(nn :: Network, input :: Vector{T}, expected_output :: Vector{T}, activation_fn :: Function, activation_derivative_fn :: Function) where T<:Number
+        first(nn.layers).neurons = input
+
+        forward(nn, activation_fn)
+        __loss = loss(nn, expected_output)
+        adjust(nn, activation_derivative_fn, expected_output)
+
+        return __loss
     end
 
     # calculate loss using the Mean Squared Error (MSE) method

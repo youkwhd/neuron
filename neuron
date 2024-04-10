@@ -48,15 +48,10 @@ EPOCH = 1000
 for _ in 1:EPOCH
     for data in dataset
         input, expected = data[1], data[2]
-        first(neural_net.layers).neurons = input
-
-        Neuron.forward(neural_net, Math.sigmoid)
-        loss = Neuron.loss(neural_net, expected)
-        Neuron.adjust(neural_net, Math.sigmoid_derivativef, expected)
-
-        # __print_nn(neural_net)
+        loss = Neuron.train(neural_net, input, expected, Math.σ, Math.σd)
 
         println()
+        __print_nn(neural_net)
         println("[input] :: $(first(neural_net.layers).neurons)")
         println("[output] :: $(last(neural_net.layers).neurons)")
         println("[expected] :: $expected")
@@ -65,3 +60,21 @@ for _ in 1:EPOCH
         # sleep(0.095)
     end
 end
+
+println("===============================================")
+
+__print_nn(neural_net)
+
+println("===============================================")
+
+input, expected = [1, 0], [1]
+Neuron.forward(neural_net, Math.σ)
+loss = Neuron.loss(neural_net, expected)
+println("[output] :: $(last(neural_net.layers).neurons)")
+println("Loss: $loss")
+
+input, expected = [0, 0], [0]
+Neuron.forward(neural_net, Math.σ)
+loss = Neuron.loss(neural_net, expected)
+println("[output] :: $(last(neural_net.layers).neurons)")
+println("Loss: $loss")
