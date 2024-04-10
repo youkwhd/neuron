@@ -48,7 +48,7 @@ EPOCH = 1000
 for _ in 1:EPOCH
     for data in dataset
         input, expected = data[1], data[2]
-        loss = Neuron.train(neural_net, input, expected, Math.σ, Math.σd)
+        loss = Neuron.train(neural_net, input, expected, Math.σ, Math.σdf)
 
         println()
         __print_nn(neural_net)
