@@ -9,15 +9,24 @@ input_neurons = rand(Float64, input_neurons_len) * 2 .- 1
 neural_net =
     Neuron.Network([
         Neuron.Layer(input_neurons),
-        Neuron.Layer(input_neurons_len * 2),
-        Neuron.Layer(input_neurons_len * 2),
-        Neuron.Layer(input_neurons_len * 2),
-        Neuron.Layer(input_neurons_len * 2),
-        Neuron.Layer(input_neurons_len ÷ 2),
+        Neuron.Layer(1),
+        Neuron.Layer(1),
+        # Neuron.Layer(input_neurons),
+        # Neuron.Layer(input_neurons_len * 2),
+        # Neuron.Layer(input_neurons_len * 2),
+        # Neuron.Layer(input_neurons_len * 2),
+        # Neuron.Layer(input_neurons_len * 2),
+        # Neuron.Layer(input_neurons_len ÷ 2),
     ])
 
 Neuron.randomize_weights(neural_net)
 
-Neuron.forward_prop(neural_net, Math.sigmoid)
-loss = Neuron.loss(neural_net, [1, 0, 0, 0])
-println("Loss: $loss")
+Neuron.forward(neural_net, Math.sigmoid)
+
+# expected = [1, 0, 0, 0]
+expected = [1]
+loss = Neuron.loss(neural_net, expected)
+println("$(last(neural_net.layers).neurons)")
+println("Loss: $loss :: $expected")
+
+Neuron.adjust(neural_net, Math.sigmoid_derivative)

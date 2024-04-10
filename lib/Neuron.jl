@@ -29,21 +29,25 @@ module Neuron
         Network(layers) = new(layers)
     end
 
+    # calculate loss using the Mean Squared Error (MSE) method
     function loss(nn :: Network, expected_output :: Vector{Int})
-        @test length(expected_output) == length(last(nn.layers).neurons)
+        output_neurons_len = length(last(nn.layers).neurons)
+        @test length(expected_output) == output_neurons_len
 
-        losses = map((neuron, expected) -> -(log(neuron) * expected),
+        losses = map((neuron, expected) -> (expected - neuron) ^ 2,
                     last(nn.layers).neurons, expected_output)
-        loss_avg = Statistics.mean(losses)
 
-        return loss_avg
+        return (1 / output_neurons_len) * sum(losses)
     end
 
-    function forward_prop(nn :: Network, activation_fn :: Function = x -> x)
+    function forward(nn :: Network, activation_fn :: Function = x -> x)
         for i in 2:length(nn.layers)
             product = reshape(nn.layers[i - 1].neurons, (1, :)) * nn.layers[i - 1].weights
             nn.layers[i].neurons = map(activation_fn, vec(product))
         end
+    end
+
+    function adjust(nn :: Network, activation_derivative_fn :: Function = x -> x)
     end
 
     # Randomizes weights between -1, 1
