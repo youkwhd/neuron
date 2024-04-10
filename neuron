@@ -8,9 +8,13 @@ input_neurons = rand(Float64, input_neurons_len) * 2 .- 1
 
 neural_net =
     Neuron.Network([
-        Neuron.Layer(input_neurons),
+        # Neuron.Layer([1.5], [0.8;;]),
+        # Neuron.Layer(1, [0;;]),
+
+        Neuron.Layer(2),
+        Neuron.Layer(2),
         Neuron.Layer(1),
-        Neuron.Layer(1),
+
         # Neuron.Layer(input_neurons),
         # Neuron.Layer(input_neurons_len * 2),
         # Neuron.Layer(input_neurons_len * 2),
@@ -21,12 +25,43 @@ neural_net =
 
 Neuron.randomize_weights(neural_net)
 
-Neuron.forward(neural_net, Math.sigmoid)
+function __print_nn(nn)
+    for layer in nn.layers
+        println(layer.neurons)
+        println(layer.weights)
+        println()
+    end
+end
 
-# expected = [1, 0, 0, 0]
-expected = [1]
-loss = Neuron.loss(neural_net, expected)
-println("$(last(neural_net.layers).neurons)")
-println("Loss: $loss :: $expected")
+# all possible xor combination
+dataset = [
+    # inputs, expected
 
-Neuron.adjust(neural_net, Math.sigmoid_derivative)
+    # [[0, 0], [0]],
+    [[0, 1], [1]],
+    # [[1, 0], [1]],
+    # [[1, 1], [0]],
+]
+
+EPOCH = 1000
+
+for _ in 1:EPOCH
+    for data in dataset
+        input, expected = data[1], data[2]
+        first(neural_net.layers).neurons = input
+
+        Neuron.forward(neural_net, Math.sigmoid)
+        loss = Neuron.loss(neural_net, expected)
+        Neuron.adjust(neural_net, Math.sigmoid_derivativef, expected)
+
+        # __print_nn(neural_net)
+
+        println()
+        println("[input] :: $(first(neural_net.layers).neurons)")
+        println("[output] :: $(last(neural_net.layers).neurons)")
+        println("[expected] :: $expected")
+        println("Loss: $loss")
+        println("===============================================")
+        # sleep(0.095)
+    end
+end
