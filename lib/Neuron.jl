@@ -57,6 +57,8 @@ module Neuron
             product = reshape(nn.layers[i - 1].neurons, (1, :)) * nn.layers[i - 1].weights
             nn.layers[i].neurons = map(activation_fn, vec(product))
         end
+
+        return last(nn.layers).neurons
     end
 
     function adjust(nn :: Network, activation_derivative_fn :: Function, expected_output :: Vector{T}) where T<:Number
