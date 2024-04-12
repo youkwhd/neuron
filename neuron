@@ -57,24 +57,19 @@ for _ in 1:EPOCH
         println("[expected] :: $expected")
         println("Loss: $loss")
         println("===============================================")
-        # sleep(0.095)
     end
 end
 
+println()
+println()
 println("===============================================")
-
 __print_nn(neural_net)
-
 println("===============================================")
 
 input, expected = [1, 0], [1]
-Neuron.forward(neural_net, Math.σ)
-loss = Neuron.loss(neural_net, expected)
+Neuron.predict(neural_net, Math.σ)
 println("[output] :: $(last(neural_net.layers).neurons)")
-println("Loss: $loss")
 
 input, expected = [0, 0], [0]
-Neuron.forward(neural_net, Math.σ)
-loss = Neuron.loss(neural_net, expected)
+Neuron.predict(neural_net, Math.σ)
 println("[output] :: $(last(neural_net.layers).neurons)")
-println("Loss: $loss")
