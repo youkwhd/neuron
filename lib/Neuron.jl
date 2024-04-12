@@ -36,7 +36,7 @@ module Neuron
         first(nn.layers).neurons = input
 
         predict(nn, activation_fn)
-        __loss = sum(map(Loss.MSE, last(nn.layers).neurons, expected_output))
+        __loss = sum(map((neuron, expected) -> 1 / length(last(nn.layers).neurons) * Loss.MSE(neuron, expected), last(nn.layers).neurons, expected_output))
         adjust(nn, activation_derivative_fn, expected_output)
 
         return __loss
@@ -64,13 +64,15 @@ module Neuron
     function adjust(nn :: Network, activation_derivative_fn :: Function, expected_output :: Vector{T}) where T<:Number
         # TODO: refactor learning_rate
         __LEARNING_RATE = 0.1
+        __loss = sum(map(Loss.MSE_derivative, last(nn.layers).neurons, expected_output))
 
         for i in range(length(nn.layers), 2, step=-1)
             for j in 1:length(nn.layers[i].neurons)
-                __loss = sum(map(Loss.MSE_derivative, last(nn.layers).neurons, expected_output))
                 learn_by = __loss * activation_derivative_fn(nn.layers[i].neurons[j])
 
-                nn.layers[i - 1].weights[j, :] = map(weight -> weight - (__LEARNING_RATE * learn_by), nn.layers[i - 1].weights[j, :])
+                for k in 1:length(nn.layers[i - 1].neurons)
+                    nn.layers[i - 1].weights[k, :] = map(weight -> weight - (__LEARNING_RATE * learn_by), nn.layers[i - 1].weights[k, :])
+                end
             end
         end
     end
