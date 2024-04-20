@@ -47,7 +47,7 @@ module Neuron
         expected_output_length = length(expected_output)
         @test expected_output_length == length(last(nn.layers).neurons)
 
-        losses = map((neuron, expected) -> (neuron - expected) ^ 2, last(nn.layers).neurons, expected_output)
+        losses = map((neuron, expected) -> (expected - neuron) ^ 2, last(nn.layers).neurons, expected_output)
         return sum(losses)
     end
 
