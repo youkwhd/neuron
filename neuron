@@ -3,24 +3,11 @@
 include("lib/Neuron.jl")
 include("lib/Math.jl")
 
-input_neurons_len = 8
-input_neurons = rand(Float64, input_neurons_len) * 2 .- 1
-
 neural_net =
     Neuron.Network([
-        # Neuron.Layer([1.5], [0.8;;]),
-        # Neuron.Layer(1, [0;;]),
-
         Neuron.Layer(2),
         Neuron.Layer(2),
         Neuron.Layer(1),
-
-        # Neuron.Layer(input_neurons),
-        # Neuron.Layer(input_neurons_len * 2),
-        # Neuron.Layer(input_neurons_len * 2),
-        # Neuron.Layer(input_neurons_len * 2),
-        # Neuron.Layer(input_neurons_len * 2),
-        # Neuron.Layer(input_neurons_len ÷ 2),
     ])
 
 Neuron.randomize_weights(neural_net)
@@ -57,24 +44,5 @@ for _ in 1:EPOCH
         println("[expected] :: $expected")
         println("Loss: $loss")
         println("===============================================")
-        # sleep(0.095)
     end
 end
-
-println("===============================================")
-
-__print_nn(neural_net)
-
-println("===============================================")
-
-input, expected = [1, 0], [1]
-Neuron.forward(neural_net, Math.σ)
-loss = Neuron.loss(neural_net, expected)
-println("[output] :: $(last(neural_net.layers).neurons)")
-println("Loss: $loss")
-
-input, expected = [0, 0], [0]
-Neuron.forward(neural_net, Math.σ)
-loss = Neuron.loss(neural_net, expected)
-println("[output] :: $(last(neural_net.layers).neurons)")
-println("Loss: $loss")
