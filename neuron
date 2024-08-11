@@ -1,45 +1,24 @@
 #!/usr/bin/julia
 
 include("lib/Neuron.jl")
-include("lib/Math.jl")
 
-neural_net =
+network =
     Neuron.Network([
         Neuron.Layer(2),
         Neuron.Layer(2),
         Neuron.Layer(1),
     ])
 
-function __print_nn(nn)
-    for layer in nn.layers
-        println(layer.neurons)
-        println(layer.weights)
-        println()
-    end
-end
-
-# all possible xor combination
+# all possible xor combinations
 dataset = [
-    # inputs, expected
-    # [[0, 0], [0]],
+    [[0, 0], [0]],
     [[0, 1], [1]],
-    # [[1, 0], [1]],
-    # [[1, 1], [0]],
+    [[1, 0], [1]],
+    [[1, 1], [0]],
 ]
 
-EPOCH = 1000
+Neuron.train(network, dataset)
 
-for _ in 1:EPOCH
-    for data in dataset
-        input, expected = data[1], data[2]
-        loss = Neuron.train(neural_net, input, expected, Math.σ, Math.σdf)
-
-        println()
-        __print_nn(neural_net)
-        println("[INPUT] :: $(first(neural_net.layers).neurons)")
-        println("[OUTPUT] :: $(last(neural_net.layers).neurons) -- $(round(last(neural_net.layers).neurons[1]))")
-        println("[EXPECTED] :: $expected")
-        println("LOSS: $loss")
-        println("===============================================")
-    end
-end
+input = convert(Vector{Float64}, [parse(Int64, ARGS[1]), parse(Int64, ARGS[2])])
+result = Neuron.predict(network, input)
+println(Int64(round(result[1])))

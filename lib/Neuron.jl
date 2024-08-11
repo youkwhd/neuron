@@ -2,6 +2,26 @@ module Neuron
     import Statistics
     using Test
 
+    ReLU(x) = max(0, x)
+
+    # x == 0 should be an anomaly,
+    # but for the sake of simplicty just interpret 0 to be the result
+    # 
+    # see: https://stats.stackexchange.com/a/333400
+    ReLU_derivative(x) = Int(x > 0)
+
+    # Leaky ReLU
+    LReLU(x) = max(0.01, x)
+    LReLU_derivative(x) = x > 0 ? 1 : 0.01
+
+    sigmoid(x) = 1 / (1 + exp(-x))
+    σ = sigmoid
+
+    sigmoid_derivative(x) = sigmoid_derivativef(sigmoid(x))
+    sigmoid_derivativef(x) = x * (1 - x)
+    σd = sigmoid_derivative
+    σdf = sigmoid_derivativef
+
     mutable struct Layer
         neurons :: Vector{Float64}
         weights :: Matrix{Float64}
@@ -23,7 +43,7 @@ module Neuron
         end
     end
 
-    struct Network
+    mutable struct Network
         layers :: Array{Layer}
 
         Network(layers) = begin 
@@ -34,14 +54,50 @@ module Neuron
         end
     end
 
-    function train(nn :: Network, input :: Vector{T}, expected_output :: Vector{T}, activation_fn :: Function, activation_derivative_fn :: Function) where T<:Number
-        first(nn.layers).neurons = input
+    # function train(nn :: Network, input :: Vector{T}, expected_output :: Vector{T}, activation_fn :: Function, activation_derivative_fn :: Function) where T<:Number
+    #     first(nn.layers).neurons = input
 
-        predict(nn, activation_fn)
-        adjust(nn, activation_derivative_fn, expected_output)
+    #     predict(nn, activation_fn)
+    #     adjust(nn, activation_derivative_fn, expected_output)
 
-        __loss = sum(map((neuron, expected) -> 1 / length(last(nn.layers).neurons) * Loss.MSE(neuron, expected), last(nn.layers).neurons, expected_output))
-        return __loss
+    #     __loss = sum(map((neuron, expected) -> 1 / length(last(nn.layers).neurons) * Loss.MSE(neuron, expected), last(nn.layers).neurons, expected_output))
+    #     return __loss
+    # end
+
+    function train(nn :: Network, dataset :: Vector{Vector{Vector{Int64}}}; epoch=4000)
+        mutated = deepcopy(nn)
+        randomize_weights(mutated)
+        best_loss = 0
+
+        for data in dataset
+            input = data[1]
+            expected = data[2]
+
+            predict(mutated, convert(Vector{Float64}, input))
+            best_loss += expected != convert(Vector{Int64}, map(round, last(mutated.layers).neurons))
+        end
+
+        # for _ = 1:epoch
+        while best_loss != 0
+            loss = 0
+            next = deepcopy(mutated)
+            randomize_weights(next)
+
+            for data in dataset
+                input = data[1]
+                expected = data[2]
+
+                predict(next, convert(Vector{Float64}, input))
+                loss += expected != convert(Vector{Int64}, map(round, last(next.layers).neurons))
+            end
+
+            if loss < best_loss
+                best_loss = loss
+                mutated = next
+            end
+        end
+
+        nn.layers = mutated.layers
     end
 
     module Loss
@@ -54,7 +110,9 @@ module Neuron
         end
     end
 
-    function predict(nn :: Network, activation_fn :: Function)
+    function predict(nn :: Network, input :: Vector{Float64}; activation_fn :: Function = ReLU)
+        first(nn.layers).neurons = input
+
         for i in 2:length(nn.layers)
             product = reshape(nn.layers[i - 1].neurons, (1, :)) * nn.layers[i - 1].weights
             nn.layers[i].neurons = map(activation_fn, vec(product))
