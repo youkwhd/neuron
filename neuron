@@ -10,8 +10,6 @@ neural_net =
         Neuron.Layer(1),
     ])
 
-Neuron.randomize_weights(neural_net)
-
 function __print_nn(nn)
     for layer in nn.layers
         println(layer.neurons)
@@ -23,7 +21,6 @@ end
 # all possible xor combination
 dataset = [
     # inputs, expected
-
     # [[0, 0], [0]],
     [[0, 1], [1]],
     # [[1, 0], [1]],
@@ -39,10 +36,10 @@ for _ in 1:EPOCH
 
         println()
         __print_nn(neural_net)
-        println("[input] :: $(first(neural_net.layers).neurons)")
-        println("[output] :: $(last(neural_net.layers).neurons)")
-        println("[expected] :: $expected")
-        println("Loss: $loss")
+        println("[INPUT] :: $(first(neural_net.layers).neurons)")
+        println("[OUTPUT] :: $(last(neural_net.layers).neurons) -- $(round(last(neural_net.layers).neurons[1]))")
+        println("[EXPECTED] :: $expected")
+        println("LOSS: $loss")
         println("===============================================")
     end
 end

@@ -28,7 +28,9 @@ module Neuron
 
         Network(layers) = begin 
             @test length(layers) >= 2
-            new(layers)
+            network = new(layers)
+            randomize_weights(network)
+            return network
         end
     end
 
@@ -36,9 +38,9 @@ module Neuron
         first(nn.layers).neurons = input
 
         predict(nn, activation_fn)
-        __loss = sum(map((neuron, expected) -> 1 / length(last(nn.layers).neurons) * Loss.MSE(neuron, expected), last(nn.layers).neurons, expected_output))
         adjust(nn, activation_derivative_fn, expected_output)
 
+        __loss = sum(map((neuron, expected) -> 1 / length(last(nn.layers).neurons) * Loss.MSE(neuron, expected), last(nn.layers).neurons, expected_output))
         return __loss
     end
 
