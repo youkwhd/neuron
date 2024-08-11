@@ -113,7 +113,7 @@ module Neuron
     function predict(nn :: Network, input :: Vector{Float64}; activation_fn :: Function = ReLU)
         first(nn.layers).neurons = input
 
-        for i in 2:length(nn.layers)
+        for i = 2:length(nn.layers)
             product = reshape(nn.layers[i - 1].neurons, (1, :)) * nn.layers[i - 1].weights
             nn.layers[i].neurons = map(activation_fn, vec(product))
         end
@@ -139,7 +139,7 @@ module Neuron
 
     # Randomizes weights between -1, 1
     function randomize_weights(nn :: Network)
-        for i in 1:(length(nn.layers) - 1)
+        for i = 1:(length(nn.layers) - 1)
             nn.layers[i].weights = 
                 rand(Float64,
                      (length(nn.layers[i].neurons),
