@@ -24,22 +24,23 @@ module Neuron
 
     mutable struct Layer
         neurons :: Vector{Float64}
+        biases :: Vector{Float64}
         weights :: Matrix{Float64}
 
-        Layer(len :: Int) = new(Vector{Float64}(undef, len), Matrix{Float64}(undef, len, 1))
+        Layer(len :: Int) = new(Vector{Float64}(undef, len), Vector{Float64}(undef, len), Matrix{Float64}(undef, len, 1))
         Layer(len :: Int, weights) = begin
             nrows, _ = size(weights)
             @test nrows == len
 
-            new(Vector{Float64}(undef, len), weights)
+            new(Vector{Float64}(undef, len), Vector{Float64}(undef, len), weights)
         end
 
-        Layer(neurons) = new(neurons, Matrix{Float64}(undef, length(neurons), 1))
+        Layer(neurons) = new(neurons, Vector{Float64}(undef, length(neurons)), Matrix{Float64}(undef, length(neurons), 1))
         Layer(neurons, weights) = begin 
             nrows, _ = size(weights)
             @test nrows == length(neurons)
 
-            new(neurons, weights)
+            new(neurons, Vector{Float64}(undef, length(neurons)), weights)
         end
     end
 
@@ -49,7 +50,7 @@ module Neuron
         Network(layers) = begin 
             @test length(layers) >= 2
             network = new(layers)
-            randomize_weights(network)
+            randomize(network)
             return network
         end
     end
@@ -66,7 +67,7 @@ module Neuron
 
     function train(nn :: Network, dataset :: Vector{Vector{Vector{Int64}}}; epoch=4000)
         mutated = deepcopy(nn)
-        randomize_weights(mutated)
+        randomize(mutated)
         best_loss = 0
 
         for data in dataset
@@ -81,7 +82,7 @@ module Neuron
         while best_loss != 0
             loss = 0
             next = deepcopy(mutated)
-            randomize_weights(next)
+            randomize(next)
 
             for data in dataset
                 input = data[1]
@@ -115,7 +116,8 @@ module Neuron
 
         for i = 2:length(nn.layers)
             product = reshape(nn.layers[i - 1].neurons, (1, :)) * nn.layers[i - 1].weights
-            nn.layers[i].neurons = map(activation_fn, vec(product))
+            product = vec(product) + nn.layers[i].biases
+            nn.layers[i].neurons = map(activation_fn, product)
         end
 
         return last(nn.layers).neurons
@@ -137,8 +139,7 @@ module Neuron
         end
     end
 
-    # Randomizes weights between -1, 1
-    function randomize_weights(nn :: Network)
+    function randomize(nn :: Network)
         for i = 1:(length(nn.layers) - 1)
             nn.layers[i].weights = 
                 rand(-5:5,
@@ -149,6 +150,11 @@ module Neuron
             #     rand(Float64,
             #          (length(nn.layers[i].neurons),
             #           length(nn.layers[i + 1].neurons))) * 2 .- 1
+        end
+
+        for i = 2:length(nn.layers)
+            nn.layers[i].biases = rand(-1:1, length(nn.layers[i].neurons))
+            # nn.layers[i].biases = rand(Float64, length(nn.layers[i].neurons)) * 2 .- 1
         end
     end
 end
