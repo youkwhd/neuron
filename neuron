@@ -27,19 +27,31 @@ dataset = [
     # [[0, 1], [0]],
     # [[1, 0], [0]],
     # [[1, 1], [1]],
+
+    # NAND
+    # [[0, 0], [1]],
+    # [[0, 1], [1]],
+    # [[1, 0], [1]],
+    # [[1, 1], [0]],
+
+    # NOR
+    # [[0, 0], [1]],
+    # [[0, 1], [0]],
+    # [[1, 0], [0]],
+    # [[1, 1], [0]],
 ]
 
 
 Neuron.train(network, dataset)
 
-# for data in dataset
-#     result = Neuron.predict(network, convert(Vector{Float64}, data[1]))
-#     println(Int64(round(result[1])))
-#     println(network.layers)
-# end
+for data in dataset
+    result = Neuron.predict(network, convert(Vector{Float64}, data[1]))
+    println(result, " ", Int64(round(result[1])))
+    # println(network.layers)
+    # println()
+end
 
-# println(network.layers)
-
-input = convert(Vector{Float64}, [parse(Int64, ARGS[1]), parse(Int64, ARGS[2])])
-result = Neuron.predict(network, input)
-println(Int64(round(result[1])))
+# input = convert(Vector{Float64}, [parse(Int64, ARGS[1]), parse(Int64, ARGS[2])])
+# result = Neuron.predict(network, input)
+# println(result, " ", Int64(round(result[1])))
+# println(Int64(round(result[1])))

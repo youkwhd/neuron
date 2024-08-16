@@ -55,63 +55,32 @@ module Neuron
         end
     end
 
-    # function train(nn :: Network, input :: Vector{T}, expected_output :: Vector{T}, activation_fn :: Function, activation_derivative_fn :: Function) where T<:Number
-    #     first(nn.layers).neurons = input
+    function train(nn :: Network, dataset :: Vector{Vector{Vector{Int64}}}; epoch=30000)
+        dataset = convert(Vector{Vector{Vector{Float64}}}, dataset)
 
-    #     predict(nn, activation_fn)
-    #     adjust(nn, activation_derivative_fn, expected_output)
+        for _ = 1:epoch
+            adjust(nn, dataset)
+            println(cost(nn, dataset))
+        end
+    end
 
-    #     __loss = sum(map((neuron, expected) -> 1 / length(last(nn.layers).neurons) * Loss.MSE(neuron, expected), last(nn.layers).neurons, expected_output))
-    #     return __loss
-    # end
-
-    function train(nn :: Network, dataset :: Vector{Vector{Vector{Int64}}}; epoch=4000)
-        mutated = deepcopy(nn)
-        randomize(mutated)
-        best_loss = 0
+    function cost(nn :: Network, dataset :: Vector{Vector{Vector{Float64}}})
+        result = 0
 
         for data in dataset
             input = data[1]
             expected = data[2]
 
-            predict(mutated, convert(Vector{Float64}, input))
-            best_loss += expected != convert(Vector{Int64}, map(round, last(mutated.layers).neurons))
+            pred = predict(nn, input)
+            distance = sum(pred - expected)
+            result += distance * distance
         end
 
-        # for _ = 1:epoch
-        while best_loss != 0
-            loss = 0
-            next = deepcopy(mutated)
-            randomize(next)
-
-            for data in dataset
-                input = data[1]
-                expected = data[2]
-
-                predict(next, convert(Vector{Float64}, input))
-                loss += expected != convert(Vector{Int64}, map(round, last(next.layers).neurons))
-            end
-
-            if loss < best_loss
-                best_loss = loss
-                mutated = next
-            end
-        end
-
-        nn.layers = mutated.layers
+        result /= length(dataset)
+        return result
     end
 
-    module Loss
-        function MSE(output :: Float64, expected :: T) where T<:Number
-            return (output - expected) ^ 2
-        end
-
-        function MSE_derivative(output :: Float64, expected :: T) where T<:Number
-            return 2 * (output - expected)
-        end
-    end
-
-    function predict(nn :: Network, input :: Vector{Float64}; activation_fn :: Function = ReLU)
+    function predict(nn :: Network, input :: Vector{Float64}; activation_fn :: Function = σ)
         first(nn.layers).neurons = input
 
         for i = 2:length(nn.layers)
@@ -123,38 +92,58 @@ module Neuron
         return last(nn.layers).neurons
     end
 
-    function adjust(nn :: Network, activation_derivative_fn :: Function, expected_output :: Vector{T}) where T<:Number
-        # TODO: refactor learning_rate
-        __LEARNING_RATE = 0.1
-        __loss = sum(map(Loss.MSE_derivative, last(nn.layers).neurons, expected_output))
+    function adjust(nn :: Network, dataset :: Vector{Vector{Vector{Float64}}}; learning_rate=0.10)
+        slide = 0.10
+        old_cost = cost(nn, dataset)
+        mutated = deepcopy(nn)
 
-        for i in range(length(nn.layers), 2, step=-1)
-            for j in 1:length(nn.layers[i].neurons)
-                learn_by = __loss * activation_derivative_fn(nn.layers[i].neurons[j])
-
-                for k in 1:length(nn.layers[i - 1].neurons)
-                    nn.layers[i - 1].weights[k, :] = map(weight -> weight - (__LEARNING_RATE * learn_by), nn.layers[i - 1].weights[k, :])
+        for i = 2:length(nn.layers)
+            for j = 1:ndims(nn.layers[i - 1].weights)
+                for k = 1:length(nn.layers[i - 1].weights[j, :])
+                    temp = nn.layers[i - 1].weights[j, k]
+                    nn.layers[i - 1].weights[j, k] += slide
+                    mutated.layers[i - 1].weights[j, k] = (cost(nn, dataset) - old_cost) / slide
+                    nn.layers[i - 1].weights[j, k] = temp
                 end
+            end
+
+            for j = 1:length(nn.layers[i].biases)
+                temp = nn.layers[i].biases[j]
+                nn.layers[i].biases[j] += slide
+                mutated.layers[i].biases[j] = (cost(nn, dataset) - old_cost) / slide
+                nn.layers[i].biases[j] = temp
+            end
+        end
+
+        for i = 2:length(nn.layers)
+            for j = 1:ndims(nn.layers[i - 1].weights)
+                for k = 1:length(nn.layers[i - 1].weights[j, :])
+                    nn.layers[i - 1].weights[j, k] -= learning_rate * mutated.layers[i - 1].weights[j, k]
+                end
+            end
+
+            for j = 1:length(nn.layers[i].biases)
+                nn.layers[i].biases[j] -= learning_rate * mutated.layers[i].biases[j]
             end
         end
     end
 
     function randomize(nn :: Network)
         for i = 1:(length(nn.layers) - 1)
-            nn.layers[i].weights = 
-                rand(-5:5,
-                     (length(nn.layers[i].neurons),
-                      length(nn.layers[i + 1].neurons)))
-
             # nn.layers[i].weights = 
-            #     rand(Float64,
+            #     rand(-5:5,
             #          (length(nn.layers[i].neurons),
-            #           length(nn.layers[i + 1].neurons))) * 2 .- 1
+            #           length(nn.layers[i + 1].neurons)))
+
+            nn.layers[i].weights = 
+                rand(Float64,
+                     (length(nn.layers[i].neurons),
+                      length(nn.layers[i + 1].neurons))) * 2 .- 1
         end
 
         for i = 2:length(nn.layers)
-            nn.layers[i].biases = rand(-1:1, length(nn.layers[i].neurons))
-            # nn.layers[i].biases = rand(Float64, length(nn.layers[i].neurons)) * 2 .- 1
+            # nn.layers[i].biases = rand(-1:1, length(nn.layers[i].neurons))
+            nn.layers[i].biases = rand(Float64, length(nn.layers[i].neurons)) * 2 .- 1
         end
     end
 end
