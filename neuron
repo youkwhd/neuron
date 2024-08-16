@@ -1,6 +1,10 @@
 #!/usr/bin/julia
 
-include("lib/Neuron.jl")
+
+push!(LOAD_PATH, joinpath(pwd(), "lib"))
+
+using Neuron
+using Activation
 
 function help()
     println("""$(PROGRAM_FILE): <bool> <bool> [--verbose] [--dataset <gate>]
@@ -57,12 +61,14 @@ function main(args)
         end
 
         if args[i] == "-v" || args[i] == "--verbose"
-            verbose = true
+            VERBOSE[] = true
+            continue
         end
 
         if args[i] == "--gate"
             i += 1
             dataset = args[i]
+            continue
         end
 
         help()

@@ -1,26 +1,10 @@
 module Neuron
-    import Statistics
+    using Activation
     using Test
 
-    ReLU(x) = max(0, x)
+    export Layer, Network, train, predict, VERBOSE
 
-    # x == 0 should be an anomaly,
-    # but for the sake of simplicty just interpret 0 to be the result
-    # 
-    # see: https://stats.stackexchange.com/a/333400
-    ReLU_derivative(x) = Int(x > 0)
-
-    # Leaky ReLU
-    LReLU(x) = max(0.01, x)
-    LReLU_derivative(x) = x > 0 ? 1 : 0.01
-
-    sigmoid(x) = 1 / (1 + exp(-x))
-    σ = sigmoid
-
-    sigmoid_derivative(x) = sigmoid_derivativef(sigmoid(x))
-    sigmoid_derivativef(x) = x * (1 - x)
-    σd = sigmoid_derivative
-    σdf = sigmoid_derivativef
+    VERBOSE = Ref(false)
 
     mutable struct Layer
         neurons :: Vector{Float64}
@@ -60,19 +44,24 @@ module Neuron
 
         for _ = 1:epoch
             adjust(nn, dataset)
-            println("Cost: ", cost(nn, dataset))
+
+            if VERBOSE[]
+                println("Cost: ", cost(nn, dataset))
+            end
         end
 
         if cost(nn, dataset) > 0.005
-            println("[WARN ::] ", "cost is too big, retraining..")
-
-            if cost(nn, dataset) >= 0.01
-                println("[WARN ::] ", "randomizing weights and biases..")
-                randomize(nn)
+            if VERBOSE[]
+                println("[WARN ::] ", "cost is too big, retraining..")
             end
 
-            println(nn.layers)
-            sleep(3)
+            if cost(nn, dataset) >= 0.01
+                if VERBOSE[]
+                    println("[WARN ::] ", "randomizing weights and biases..")
+                end
+
+                randomize(nn)
+            end
 
             train(nn, convert(Vector{Vector{Vector{Int64}}}, dataset))
         end
@@ -98,7 +87,7 @@ module Neuron
         return result
     end
 
-    function forward(nn :: Network, input :: Vector{Float64}; activation_fn :: Function = σ)
+    function forward(nn :: Network, input :: Vector{Float64}; activation_fn :: Function = Activation.σ)
         first(nn.layers).neurons = input
 
         for i = 2:length(nn.layers)
