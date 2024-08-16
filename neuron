@@ -88,17 +88,17 @@ function parse_args(args :: Array{String})
             gate = args[i + 1]
 
             if uppercase(gate) == "XOR" || gate == "^"
-                dataset = dataset[1]
+                dataset = datasets[1]
             elseif uppercase(gate) == "XNOR"
-                dataset = dataset[2]
+                dataset = datasets[2]
             elseif uppercase(gate) == "AND" || gate == "&"
-                dataset = dataset[3]
+                dataset = datasets[3]
             elseif uppercase(gate) == "NAND"
-                dataset = dataset[4]
+                dataset = datasets[4]
             elseif uppercase(gate) == "OR" || gate == "|"
-                dataset = dataset[5]
+                dataset = datasets[5]
             elseif uppercase(gate) == "NOR"
-                dataset = dataset[6]
+                dataset = datasets[6]
             else
                 println("$(PROGRAM_FILE): Unknown gate '$(args[i + 1])'.")
                 help()
