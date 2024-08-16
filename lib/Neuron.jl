@@ -60,8 +60,26 @@ module Neuron
 
         for _ = 1:epoch
             adjust(nn, dataset)
-            println(cost(nn, dataset))
+            println("Cost: ", cost(nn, dataset))
         end
+
+        if cost(nn, dataset) > 0.005
+            println("[WARN ::] ", "cost is too big, retraining..")
+
+            if cost(nn, dataset) >= 0.01
+                println("[WARN ::] ", "randomizing weights and biases..")
+                randomize(nn)
+            end
+
+            println(nn.layers)
+            sleep(3)
+
+            train(nn, convert(Vector{Vector{Vector{Int64}}}, dataset))
+        end
+    end
+
+    function predict(nn :: Network, input :: Vector{Float64})
+        convert(Vector{Int}, map(round, forward(nn, input)))
     end
 
     function cost(nn :: Network, dataset :: Vector{Vector{Vector{Float64}}})
@@ -71,7 +89,7 @@ module Neuron
             input = data[1]
             expected = data[2]
 
-            pred = predict(nn, input)
+            pred = forward(nn, input)
             distance = sum(pred - expected)
             result += distance * distance
         end
@@ -80,7 +98,7 @@ module Neuron
         return result
     end
 
-    function predict(nn :: Network, input :: Vector{Float64}; activation_fn :: Function = σ)
+    function forward(nn :: Network, input :: Vector{Float64}; activation_fn :: Function = σ)
         first(nn.layers).neurons = input
 
         for i = 2:length(nn.layers)
@@ -93,7 +111,7 @@ module Neuron
     end
 
     function adjust(nn :: Network, dataset :: Vector{Vector{Vector{Float64}}}; learning_rate=0.10)
-        slide = 0.10
+        slide = 0.1
         old_cost = cost(nn, dataset)
         mutated = deepcopy(nn)
 
