@@ -2,49 +2,88 @@
 
 include("lib/Neuron.jl")
 
-network =
-    Neuron.Network([
-        Neuron.Layer(2),
-        Neuron.Layer(2),
-        Neuron.Layer(1),
-    ])
+function help()
+    println("""$(PROGRAM_FILE): <bool> <bool> [--verbose] [--dataset <gate>]
+               Neural network learning logic gates.
 
-dataset = [
-    # XOR
-    [[0, 0], [0]],
-    [[0, 1], [1]],
-    [[1, 0], [1]],
-    [[1, 1], [0]],
+               Options:
+                 -h, --help    Prints this message and exit.
+                 --verbose     Print debug information.
+                 --gate <gate> Use the specified gate instead of XOR gate,
+                               can be either AND, OR, XOR, NAND, NOR, XNOR.""")
+end
 
-    # OR
-    # [[0, 0], [0]],
-    # [[0, 1], [1]],
-    # [[1, 0], [1]],
-    # [[1, 1], [1]],
+function main(args)
+    verbose = false
 
-    # AND
-    # [[0, 0], [0]],
-    # [[0, 1], [0]],
-    # [[1, 0], [0]],
-    # [[1, 1], [1]],
+    # TODO: parse literal "true" & "false"
+    input = [parse(Int, popfirst!(args)), parse(Int, popfirst!(args))]
 
-    # NAND
-    # [[0, 0], [1]],
-    # [[0, 1], [1]],
-    # [[1, 0], [1]],
-    # [[1, 1], [0]],
+    dataset = [
+        [[0, 0], [0]],
+        [[0, 1], [1]],
+        [[1, 0], [1]],
+        [[1, 1], [0]],
+    ]
 
-    # NOR
-    # [[0, 0], [1]],
-    # [[0, 1], [0]],
-    # [[1, 0], [0]],
-    # [[1, 1], [0]],
-]
+        # OR
+        # [[0, 0], [0]],
+        # [[0, 1], [1]],
+        # [[1, 0], [1]],
+        # [[1, 1], [1]],
 
+        # AND
+        # [[0, 0], [0]],
+        # [[0, 1], [0]],
+        # [[1, 0], [0]],
+        # [[1, 1], [1]],
 
-Neuron.train(network, dataset)
+        # NAND
+        # [[0, 0], [1]],
+        # [[0, 1], [1]],
+        # [[1, 0], [1]],
+        # [[1, 1], [0]],
 
-for data in dataset
-    result = Neuron.predict(network, convert(Vector{Float64}, data[1]))
-    println(data[1], " ~", last(network.layers).neurons[1], " => ", result[1])
+        # NOR
+        # [[0, 0], [1]],
+        # [[0, 1], [0]],
+        # [[1, 0], [0]],
+        # [[1, 1], [0]],
+
+    for i = 1:length(args)
+        if args[i] == "-h" || args[i] == "--help"
+            help()
+            exit()
+        end
+
+        if args[i] == "-v" || args[i] == "--verbose"
+            verbose = true
+        end
+
+        if args[i] == "--gate"
+            i += 1
+            dataset = args[i]
+        end
+
+        help()
+        exit(1)
+    end
+
+    network =
+        Neuron.Network([
+            Neuron.Layer(2),
+            Neuron.Layer(2),
+            Neuron.Layer(1),
+        ])
+
+    Neuron.train(network, dataset)
+
+    for data in dataset
+        result = Neuron.predict(network, convert(Vector{Float64}, data[1]))
+        println(data[1], " ~", last(network.layers).neurons[1], " => ", result[1])
+    end
+end
+
+if abspath(PROGRAM_FILE) == @__FILE__
+    main(ARGS)
 end
