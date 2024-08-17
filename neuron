@@ -43,6 +43,8 @@ function parse_args(args :: Array{String})
     arg = popfirst!(args)
     if lowercase(arg) == "true"
         input[1] = true
+    elseif lowercase(arg) == "false"
+        input[1] = false
     else
         try
             input[1] = parse(Int, arg)
@@ -58,8 +60,10 @@ function parse_args(args :: Array{String})
     end
 
     arg = popfirst!(args)
-    if lowercase(arg) == "false"
+    if lowercase(arg) == "true"
         input[2] = true
+    elseif lowercase(arg) == "false"
+        input[2] = false
     else
         try
             input[2] = parse(Int, arg)
