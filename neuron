@@ -1,48 +1,153 @@
 #!/usr/bin/julia
 
-include("lib/Neuron.jl")
-include("lib/Math.jl")
+push!(LOAD_PATH, joinpath(pwd(), "lib"))
 
-neural_net =
-    Neuron.Network([
-        Neuron.Layer(2),
-        Neuron.Layer(2),
-        Neuron.Layer(1),
-    ])
+using Neuron
+using Activation
 
-Neuron.randomize_weights(neural_net)
+datasets =
+    [[[[0, 0], [0]], # XOR
+      [[0, 1], [1]],
+      [[1, 0], [1]],
+      [[1, 1], [0]]],
+     [[[0, 0], [1]], # XNOR
+      [[0, 1], [0]],
+      [[1, 0], [0]],
+      [[1, 1], [1]]],
+     [[[0, 0], [0]], # AND
+      [[0, 1], [0]],
+      [[1, 0], [0]],
+      [[1, 1], [1]]],
+     [[[0, 0], [1]], # NAND
+      [[0, 1], [1]],
+      [[1, 0], [1]],
+      [[1, 1], [0]]],
+     [[[0, 0], [0]], # OR
+      [[0, 1], [1]],
+      [[1, 0], [1]],
+      [[1, 1], [1]]],
+     [[[0, 0], [1]], # NOR
+      [[0, 1], [0]],
+      [[1, 0], [0]],
+      [[1, 1], [0]]]]
 
-function __print_nn(nn)
-    for layer in nn.layers
-        println(layer.neurons)
-        println(layer.weights)
-        println()
+function parse_args(args :: Array{String})
+    input = Array{Bool}(undef, 2)
+    dataset = datasets[1]
+
+    if isempty(args)
+        println("$(PROGRAM_FILE): The first bool is not specified.")
+        exit(1)
     end
+
+    arg = popfirst!(args)
+    if lowercase(arg) == "true"
+        input[1] = true
+    elseif lowercase(arg) == "false"
+        input[1] = false
+    else
+        try
+            input[1] = parse(Int, arg)
+        catch _
+            println("$(PROGRAM_FILE): Unknown value '$(arg)'.")
+            exit(1)
+        end
+    end
+
+    if isempty(args)
+        println("$(PROGRAM_FILE): The second bool is not specified.")
+        exit(1)
+    end
+
+    arg = popfirst!(args)
+    if lowercase(arg) == "true"
+        input[2] = true
+    elseif lowercase(arg) == "false"
+        input[2] = false
+    else
+        try
+            input[2] = parse(Int, arg)
+        catch _
+            println("$(PROGRAM_FILE): Unknown value '$(arg)'.")
+            exit(1)
+        end
+    end
+
+    i = 1
+    while i <= length(args)
+        if args[i] == "-h" || args[i] == "--help"
+            help()
+            exit()
+        elseif args[i] == "--verbose"
+            VERBOSE[] = true
+
+            i += 1
+            continue
+        elseif args[i] == "--gate"
+            gate = args[i + 1]
+
+            if uppercase(gate) == "XOR" || gate == "^"
+                dataset = datasets[1]
+            elseif uppercase(gate) == "XNOR"
+                dataset = datasets[2]
+            elseif uppercase(gate) == "AND" || gate == "&"
+                dataset = datasets[3]
+            elseif uppercase(gate) == "NAND"
+                dataset = datasets[4]
+            elseif uppercase(gate) == "OR" || gate == "|"
+                dataset = datasets[5]
+            elseif uppercase(gate) == "NOR"
+                dataset = datasets[6]
+            else
+                println("$(PROGRAM_FILE): Unknown gate '$(args[i + 1])'.")
+                exit(1)
+            end
+
+            i += 2
+            continue
+        end
+
+        println("$(PROGRAM_FILE): Unknown argument '$(args[i])'.")
+        exit(1)
+    end
+
+    return input, dataset
 end
 
-# all possible xor combination
-dataset = [
-    # inputs, expected
+function help()
+    println("""Usage: $(PROGRAM_FILE): <bool> <bool> [--verbose] [--gate <gate>]
+               Neural network learning logic gates.
 
-    # [[0, 0], [0]],
-    [[0, 1], [1]],
-    # [[1, 0], [1]],
-    # [[1, 1], [0]],
-]
+               Options:
+                 -h, --help    Prints this message and exit.
+                 --verbose     Print debug information.
+                 --gate <gate> Use the specified gate instead of XOR gate,
+                               can be either AND, OR, XOR, NAND, NOR, XNOR.""")
+end
 
-EPOCH = 1000
+function main(args :: Array{String})
+    (input, dataset) = parse_args(args)
 
-for _ in 1:EPOCH
-    for data in dataset
-        input, expected = data[1], data[2]
-        loss = Neuron.train(neural_net, input, expected, Math.σ, Math.σdf)
+    network =
+        Neuron.Network([
+            Neuron.Layer(2),
+            Neuron.Layer(2),
+            Neuron.Layer(1),
+        ])
 
-        println()
-        __print_nn(neural_net)
-        println("[input] :: $(first(neural_net.layers).neurons)")
-        println("[output] :: $(last(neural_net.layers).neurons)")
-        println("[expected] :: $expected")
-        println("Loss: $loss")
-        println("===============================================")
+    Neuron.train(network, dataset)
+
+    if VERBOSE[]
+        for data in dataset
+            result = Neuron.predict(network, convert(Vector{Float64}, data[1]))
+            println(data[1], " ~", last(network.layers).neurons[1], " => ", result[1])
+        end
     end
+
+    result = Neuron.predict(network, convert(Vector{Float64}, input))
+    println(result[1])
+end
+
+if abspath(PROGRAM_FILE) == @__FILE__
+    main(ARGS)
 end

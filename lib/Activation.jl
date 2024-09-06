@@ -1,4 +1,9 @@
-module Math
+module Activation
+
+export ReLU, ReLU_derivative, LReLU,
+       LReLU_derivative, sigmoid, σ,
+       sigmoid_derivative, sigmoid_derivativef,
+       σd, σdf 
 
 ReLU(x) = max(0, x)
 
@@ -20,4 +25,4 @@ sigmoid_derivativef(x) = x * (1 - x)
 σd = sigmoid_derivative
 σdf = sigmoid_derivativef
 
-end
+end # module

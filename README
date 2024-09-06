@@ -6,4 +6,9 @@ Neural network made from scratch in Julia.
 Quick Start
 -----------
 
-    ./neuron
+The neural network is currently made for learning the XOR
+function, and is very slow:
+
+    ./neuron 1 0 --verbose
+
+Pass -h flag for additional details.
