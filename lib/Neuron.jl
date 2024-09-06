@@ -40,7 +40,7 @@ mutable struct Network
     end
 end
 
-function train(nn :: Network, dataset :: Vector{Vector{Vector{Int64}}}; epoch=30000)
+function train(nn :: Network, dataset :: Vector{Vector{Vector{Int64}}}; epoch=1200, depth=1)
     dataset = convert(Vector{Vector{Vector{Float64}}}, dataset)
 
     for _ = 1:epoch
@@ -51,20 +51,13 @@ function train(nn :: Network, dataset :: Vector{Vector{Vector{Int64}}}; epoch=30
         end
     end
 
-    if cost(nn, dataset) > 0.005
-        if VERBOSE[]
-            println("[WARN ::] ", "cost is too big, retraining..")
-        end
-
-        if cost(nn, dataset) >= 0.01
-            if VERBOSE[]
-                println("[WARN ::] ", "randomizing weights and biases..")
-            end
-
+    if cost(nn, dataset) >= 0.01
+        if depth >= 5
+            depth = 0
             randomize(nn)
         end
 
-        train(nn, convert(Vector{Vector{Vector{Int64}}}, dataset))
+        train(nn, convert(Vector{Vector{Vector{Int64}}}, dataset), depth=(depth + 1))
     end
 end
 
@@ -100,7 +93,7 @@ function forward(nn :: Network, input :: Vector{Float64}; activation_fn :: Funct
     return last(nn.layers).neurons
 end
 
-function adjust(nn :: Network, dataset :: Vector{Vector{Vector{Float64}}}; learning_rate=0.10)
+function adjust(nn :: Network, dataset :: Vector{Vector{Vector{Float64}}}; learning_rate=0.30)
     slide = 0.1
     old_cost = cost(nn, dataset)
     mutated = deepcopy(nn)
