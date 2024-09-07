@@ -52,7 +52,7 @@ function train(nn :: Network, dataset :: Vector{Vector{Vector{Int64}}}; epoch=12
     end
 
     if cost(nn, dataset) >= 0.01
-        if depth >= 5
+        if depth >= 10
             depth = 0
             randomize(nn)
         end
